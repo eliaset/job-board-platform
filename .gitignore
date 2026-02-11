@@ -12,7 +12,7 @@ env/
 # Documentation
 # /docs/*  <-- KEEP THIS COMMENTED OUT so we can submit the docs!
 .venv/
-submission_info.md
+# submission_info.md
 # Database
 db.sqlite3
 db.sqlite3-journal
