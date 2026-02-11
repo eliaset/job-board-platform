@@ -84,3 +84,31 @@ class JobPosting(models.Model):
 
     def __str__(self):
         return f"{self.title} at {self.company.company_name or self.company.email}"
+
+
+class SavedJob(models.Model):
+    """A bookmarked/saved job by a job seeker."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="saved_jobs",
+    )
+    job = models.ForeignKey(
+        JobPosting,
+        on_delete=models.CASCADE,
+        related_name="saved_by",
+    )
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-saved_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "job"],
+                name="unique_saved_job",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user.email} saved {self.job.title}"

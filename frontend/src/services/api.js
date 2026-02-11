@@ -67,4 +67,11 @@ export const getJobApplications = (jobId) =>
 export const updateApplicationStatus = (id, status) =>
   API.patch(`/applications/${id}/status/`, { status });
 
+// Saved Jobs
+export const toggleSaveJob = (jobId) => API.post(`/jobs/${jobId}/save/`);
+export const getSavedJobs = () => API.get("/jobs/saved/");
+
+// Employer Stats
+export const getEmployerStats = () => API.get("/jobs/stats/");
+
 export default API;

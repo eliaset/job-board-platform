@@ -88,3 +88,15 @@ class JobPostingDetailSerializer(serializers.ModelSerializer):
                 {"salary_max": "Maximum salary must be greater than minimum salary."}
             )
         return data
+
+
+class SavedJobSerializer(serializers.ModelSerializer):
+    """Serializer for saved/bookmarked jobs."""
+
+    job = JobPostingListSerializer(read_only=True)
+
+    class Meta:
+        from .models import SavedJob
+        model = SavedJob
+        fields = ["id", "job", "saved_at"]
+        read_only_fields = ["id", "saved_at"]

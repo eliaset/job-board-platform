@@ -1,17 +1,20 @@
 """
-Views for Job Categories and Job Postings.
+Views for Job Categories, Job Postings, Saved Jobs, and Employer Stats.
 """
 
+from django.db.models import Count
 from rest_framework import generics, permissions, status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 
 from accounts.permissions import IsAdminUser, IsEmployerOrAdmin, IsOwnerOrAdmin
-from .models import JobCategory, JobPosting
+from .models import JobCategory, JobPosting, SavedJob
 from .serializers import (
     JobCategorySerializer,
     JobPostingListSerializer,
     JobPostingDetailSerializer,
+    SavedJobSerializer,
 )
 from .filters import JobPostingFilter
 
@@ -103,3 +106,66 @@ class JobPostingDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in ("PUT", "PATCH", "DELETE"):
             return [permissions.IsAuthenticated(), IsOwnerOrAdmin()]
         return [permissions.AllowAny()]
+
+
+# ==========================================================================
+# Saved / Bookmarked Jobs
+# ==========================================================================
+
+@extend_schema(tags=["Saved Jobs"])
+class SavedJobListView(generics.ListAPIView):
+    """List all jobs saved by the authenticated user."""
+
+    serializer_class = SavedJobSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return SavedJob.objects.filter(user=self.request.user).select_related(
+            "job__company", "job__category"
+        )
+
+
+@extend_schema(tags=["Saved Jobs"])
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def toggle_save_job(request, job_id):
+    """Save or unsave a job (toggle). Returns the new saved state."""
+    try:
+        job = JobPosting.objects.get(pk=job_id)
+    except JobPosting.DoesNotExist:
+        return Response({"error": "Job not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    saved, created = SavedJob.objects.get_or_create(user=request.user, job=job)
+    if not created:
+        saved.delete()
+        return Response({"saved": False, "message": "Job unsaved."})
+    return Response({"saved": True, "message": "Job saved."}, status=status.HTTP_201_CREATED)
+
+
+# ==========================================================================
+# Employer Statistics / Analytics
+# ==========================================================================
+
+@extend_schema(tags=["Jobs"])
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def employer_stats(request):
+    """Dashboard statistics for the authenticated employer."""
+    user = request.user
+    jobs = JobPosting.objects.filter(company=user)
+    jobs_with_counts = jobs.annotate(app_count=Count("applications"))
+
+    total_jobs = jobs.count()
+    active_jobs = jobs.filter(is_active=True).count()
+    total_applications = sum(j.app_count for j in jobs_with_counts)
+
+    top_jobs = jobs_with_counts.order_by("-app_count")[:5].values(
+        "id", "title", "app_count", "is_active", "created_at"
+    )
+
+    return Response({
+        "total_jobs": total_jobs,
+        "active_jobs": active_jobs,
+        "total_applications": total_applications,
+        "top_jobs": list(top_jobs),
+    })

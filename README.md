@@ -1,225 +1,62 @@
-# 💼 Job Board Platform
+# Job Board Platform
 
-A full-stack **Job Board Platform** with a robust RESTful backend API built with **Django REST Framework** and a modern React frontend. Features role-based access control, job posting management, application tracking, and comprehensive API documentation.
+[![CI](https://github.com/eliaset/job-board-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/eliaset/job-board-platform/actions/workflows/ci.yml)
 
----
+A full-stack **Job Board Platform** built with **Django REST Framework** and **React**, featuring role-based access control, JWT authentication, job management, and application tracking.
 
-## 🚀 Tech Stack
+## 🌐 Live Demo
 
-### Backend
+| Service                | URL                                                                                              |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| **Frontend**           | [job-board-platform-smoky.vercel.app](https://job-board-platform-smoky.vercel.app)               |
+| **Backend API**        | [job-board-api-mxzh.onrender.com](https://job-board-api-mxzh.onrender.com)                       |
+| **API Docs (Swagger)** | [job-board-api-mxzh.onrender.com/api/docs/](https://job-board-api-mxzh.onrender.com/api/docs/)   |
+| **ReDoc**              | [job-board-api-mxzh.onrender.com/api/redoc/](https://job-board-api-mxzh.onrender.com/api/redoc/) |
 
-| Technology                | Purpose                                    |
-| ------------------------- | ------------------------------------------ |
-| **Django 5.1**            | Web framework                              |
-| **Django REST Framework** | Building RESTful APIs                      |
-| **PostgreSQL**            | Production database (SQLite for local dev) |
-| **JWT (SimpleJWT)**       | Secure authentication                      |
-| **drf-spectacular**       | Swagger/OpenAPI documentation              |
-| **django-filter**         | Advanced filtering                         |
-| **Gunicorn**              | Production WSGI server                     |
+### Demo Accounts
 
-### Frontend
-
-| Technology       | Purpose                     |
-| ---------------- | --------------------------- |
-| **React**        | UI framework                |
-| **Vite**         | Build tool                  |
-| **Tailwind CSS** | Utility-first CSS framework |
+| Role     | Email                   | Password       |
+| -------- | ----------------------- | -------------- |
+| Admin    | `admin@jobboard.com`    | `Admin@123`    |
+| Employer | `employer@jobboard.com` | `Employer@123` |
 
 ---
 
-## 📊 Entity-Relationship Diagram
+## ✨ Features
 
-```mermaid
-erDiagram
-    USER {
-        int id PK
-        string email UK
-        string first_name
-        string last_name
-        string role "admin | employer | job_seeker"
-        string company_name
-        string bio
-        string phone
-        datetime date_joined
-    }
+### Core Features
 
-    JOB_CATEGORY {
-        int id PK
-        string name UK
-        string description
-        datetime created_at
-    }
+- **User Authentication** — JWT-based registration, login, profile management
+- **Role-Based Access Control** — Admin, Employer, and Job Seeker roles
+- **Job Management** — Full CRUD for job postings with categories
+- **Application System** — Job seekers apply, employers review and update status
+- **Advanced Filtering** — Filter by category, job type, location, salary range
+- **Search & Sorting** — Full-text search and multi-field sorting
+- **Pagination** — Paginated API responses for large datasets
 
-    JOB_POSTING {
-        int id PK
-        string title
-        text description
-        int company_id FK
-        int category_id FK
-        string location
-        string job_type "full_time | part_time | contract | remote | internship"
-        decimal salary_min
-        decimal salary_max
-        text requirements
-        boolean is_active
-        datetime created_at
-        datetime updated_at
-    }
+### Enhanced Features
 
-    JOB_APPLICATION {
-        int id PK
-        int job_id FK
-        int applicant_id FK
-        text cover_letter
-        string status "pending | reviewed | accepted | rejected"
-        datetime applied_at
-        datetime updated_at
-    }
-
-    USER ||--o{ JOB_POSTING : "posts (employer)"
-    JOB_CATEGORY ||--o{ JOB_POSTING : "categorizes"
-    JOB_POSTING ||--o{ JOB_APPLICATION : "receives"
-    USER ||--o{ JOB_APPLICATION : "submits (job_seeker)"
-```
+- **Saved/Bookmarked Jobs** — Users can save and unsave jobs (toggle)
+- **Employer Analytics** — Dashboard stats (total jobs, applications, top postings)
+- **Seed Data** — Management command to populate demo data
+- **API Rate Limiting** — Throttling for security (100/hr anon, 1000/hr auth)
+- **Docker Support** — Dockerfile and docker-compose for containerized deployment
+- **CI/CD Pipeline** — GitHub Actions for automated testing and linting
 
 ---
 
-## 🔐 Role-Based Access Control
+## 🏗 Tech Stack
 
-| Role           | Capabilities                                                     |
-| -------------- | ---------------------------------------------------------------- |
-| **Admin**      | Manage categories, all jobs, all applications, all users         |
-| **Employer**   | Create/manage own job postings, review applications for own jobs |
-| **Job Seeker** | Browse jobs, apply to jobs, view own applications                |
-
----
-
-## 📡 API Endpoints
-
-### Authentication (`/api/auth/`)
-
-| Method    | Endpoint          | Access        | Description          |
-| --------- | ----------------- | ------------- | -------------------- |
-| `POST`    | `/register/`      | Public        | Register new user    |
-| `POST`    | `/login/`         | Public        | Obtain JWT tokens    |
-| `POST`    | `/token/refresh/` | Authenticated | Refresh access token |
-| `GET/PUT` | `/profile/`       | Authenticated | View/update profile  |
-
-### Job Categories (`/api/categories/`)
-
-| Method       | Endpoint | Access | Description            |
-| ------------ | -------- | ------ | ---------------------- |
-| `GET`        | `/`      | Public | List all categories    |
-| `POST`       | `/`      | Admin  | Create category        |
-| `GET`        | `/{id}/` | Public | Category detail        |
-| `PUT/DELETE` | `/{id}/` | Admin  | Update/delete category |
-
-### Job Postings (`/api/jobs/`)
-
-| Method       | Endpoint | Access         | Description                                 |
-| ------------ | -------- | -------------- | ------------------------------------------- |
-| `GET`        | `/`      | Public         | List jobs (filterable, sortable, paginated) |
-| `POST`       | `/`      | Employer/Admin | Create job posting                          |
-| `GET`        | `/{id}/` | Public         | Job detail                                  |
-| `PUT/DELETE` | `/{id}/` | Owner/Admin    | Update/delete job                           |
-
-**Filters:** `category`, `job_type`, `location`, `salary_min`, `salary_max`, `is_active`
-**Sorting:** `created_at`, `salary_min`, `salary_max`, `title`
-**Search:** `title`, `description`, `location`
-
-### Job Applications (`/api/applications/`)
-
-| Method  | Endpoint         | Access           | Description                 |
-| ------- | ---------------- | ---------------- | --------------------------- |
-| `POST`  | `/apply/`        | Job Seeker       | Apply to a job              |
-| `GET`   | `/my/`           | Job Seeker       | View own applications       |
-| `GET`   | `/job/{job_id}/` | Employer (owner) | View applications for a job |
-| `PATCH` | `/{id}/status/`  | Employer (owner) | Update application status   |
-
-### API Documentation
-
-| Endpoint       | Description                                    |
-| -------------- | ---------------------------------------------- |
-| `/api/docs/`   | **Swagger UI** — Interactive API documentation |
-| `/api/redoc/`  | **ReDoc** — Alternative API documentation      |
-| `/api/schema/` | OpenAPI 3.0 JSON schema                        |
-
----
-
-## ⚙️ Local Development Setup
-
-### Prerequisites
-
-- Python 3.10+
-- Node.js 18+ & npm
-- PostgreSQL (optional — SQLite used by default for local dev)
-
-### Backend Setup
-
-```bash
-cd backend
-
-# Create and activate virtual environment
-python -m venv venv
-# Windows:
-.\venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run migrations
-python manage.py migrate
-
-# Create a superuser (admin)
-python manage.py createsuperuser
-
-# Start the development server
-python manage.py runserver
-```
-
-### Frontend Setup
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
-```
-
-### Environment Variables (optional `backend/.env` file)
-
-```env
-SECRET_KEY=your-secret-key
-DEBUG=True
-DATABASE_URL=postgresql://user:password@localhost:5432/job_board
-ALLOWED_HOSTS=localhost,127.0.0.1
-```
-
----
-
-## 🧪 Testing
-
-```bash
-cd backend
-python manage.py test
-```
-
----
-
-## 🌐 Deployment (Render)
-
-The backend includes a `render.yaml` blueprint for one-click deployment:
-
-1. Push code to GitHub
-2. Go to [Render Dashboard](https://dashboard.render.com)
-3. Click **New → Blueprint** and connect your GitHub repo
-4. Render will automatically provision a PostgreSQL database and deploy the API
+| Layer            | Technology                            |
+| ---------------- | ------------------------------------- |
+| Backend          | Django 5.1, Django REST Framework     |
+| Database         | PostgreSQL (prod), SQLite (dev)       |
+| Authentication   | JWT (SimpleJWT)                       |
+| API Docs         | drf-spectacular (Swagger/OpenAPI 3.0) |
+| Frontend         | React 19, Vite, Tailwind CSS          |
+| Deployment       | Render (API), Vercel (Frontend)       |
+| CI/CD            | GitHub Actions                        |
+| Containerization | Docker, Docker Compose                |
 
 ---
 
@@ -227,43 +64,205 @@ The backend includes a `render.yaml` blueprint for one-click deployment:
 
 ```
 job-board-platform/
-├── backend/                 # Django REST API
-│   ├── config/              # Django project configuration
-│   │   ├── settings.py      # Settings (DB, auth, REST, Swagger)
-│   │   ├── urls.py          # Main URL routing
-│   │   └── wsgi.py          # WSGI entry point
-│   ├── accounts/            # User authentication & profiles
-│   │   ├── models.py        # Custom User model with roles
-│   │   ├── serializers.py   # Registration, profile serializers
-│   │   ├── views.py         # Auth views (register, login, profile)
-│   │   ├── permissions.py   # Role-based permission classes
-│   │   └── urls.py          # Auth URL patterns
-│   ├── jobs/                # Job postings & categories
-│   │   ├── models.py        # JobCategory, JobPosting models
-│   │   ├── serializers.py   # Job serializers
-│   │   ├── views.py         # Job CRUD views
-│   │   ├── filters.py       # Django-filter filter sets
-│   │   └── admin.py         # Admin panel config
-│   ├── applications/        # Job applications
-│   │   ├── models.py        # JobApplication model
-│   │   ├── serializers.py   # Application serializers
-│   │   ├── views.py         # Application views
-│   │   └── urls.py          # Application URL patterns
-│   ├── requirements.txt     # Python dependencies
-│   ├── Procfile             # Gunicorn entry point
-│   ├── render.yaml          # Render deployment blueprint
-│   └── manage.py            # Django management script
-├── frontend/                # React + Vite + Tailwind CSS
-├── .gitignore
-└── README.md
+├── backend/
+│   ├── accounts/          # User model, auth views, JWT
+│   ├── jobs/              # Job postings, categories, saved jobs
+│   ├── applications/      # Job applications, status management
+│   ├── config/            # Django settings, root URLs
+│   ├── Dockerfile         # Production Docker image
+│   ├── build.sh           # Render build script
+│   ├── requirements.txt   # Python dependencies
+│   └── manage.py
+├── frontend/
+│   ├── src/
+│   │   ├── components/    # Navbar
+│   │   ├── context/       # Auth context (JWT state)
+│   │   ├── pages/         # Home, Login, Register, Dashboard, etc.
+│   │   └── services/      # API service (Axios + interceptors)
+│   └── package.json
+├── docker-compose.yml     # Local dev with PostgreSQL
+├── render.yaml            # Render deployment blueprint
+└── .github/workflows/     # CI/CD pipeline
+    └── ci.yml
 ```
 
 ---
 
-## 👨‍💻 Author
+## 🚀 Getting Started
 
-Built as part of **Project Nexus** — ProDev Backend Engineering Program.
+### Prerequisites
 
-## 📄 License
+- Python 3.12+
+- Node.js 20+
+- PostgreSQL (optional — SQLite works for dev)
 
-This project is open source and available under the [MIT License](LICENSE).
+### Backend Setup
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows: .\venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py create_admin    # Creates admin@jobboard.com
+python manage.py seed_data       # Seeds demo categories & jobs
+python manage.py runserver
+```
+
+### Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Docker Setup (Alternative)
+
+```bash
+docker-compose up --build
+# API at http://localhost:8000
+```
+
+---
+
+## 📡 API Endpoints
+
+### Authentication
+
+| Method | Endpoint                   | Description                   |
+| ------ | -------------------------- | ----------------------------- |
+| POST   | `/api/auth/register/`      | Register (returns JWT tokens) |
+| POST   | `/api/auth/login/`         | Login (JWT token pair)        |
+| POST   | `/api/auth/token/refresh/` | Refresh access token          |
+| GET    | `/api/auth/profile/`       | Get current user profile      |
+| PUT    | `/api/auth/profile/`       | Update profile                |
+
+### Jobs
+
+| Method | Endpoint               | Description                                 |
+| ------ | ---------------------- | ------------------------------------------- |
+| GET    | `/api/jobs/`           | List jobs (filterable, sortable, paginated) |
+| POST   | `/api/jobs/`           | Create job (employer/admin)                 |
+| GET    | `/api/jobs/{id}/`      | Job detail                                  |
+| PUT    | `/api/jobs/{id}/`      | Update job (owner/admin)                    |
+| DELETE | `/api/jobs/{id}/`      | Delete job (owner/admin)                    |
+| POST   | `/api/jobs/{id}/save/` | Toggle save/unsave job                      |
+| GET    | `/api/jobs/saved/`     | List saved jobs                             |
+| GET    | `/api/jobs/stats/`     | Employer dashboard stats                    |
+
+### Categories
+
+| Method | Endpoint           | Description             |
+| ------ | ------------------ | ----------------------- |
+| GET    | `/api/categories/` | List categories         |
+| POST   | `/api/categories/` | Create category (admin) |
+
+### Applications
+
+| Method | Endpoint                         | Description                       |
+| ------ | -------------------------------- | --------------------------------- |
+| POST   | `/api/applications/apply/`       | Apply to job (job seeker)         |
+| GET    | `/api/applications/my/`          | My applications (job seeker)      |
+| GET    | `/api/applications/job/{id}/`    | Applications for a job (employer) |
+| PATCH  | `/api/applications/{id}/status/` | Update application status         |
+
+### Filtering & Search
+
+```
+GET /api/jobs/?category=1&job_type=remote&location=Addis&search=engineer&ordering=-salary_max
+```
+
+---
+
+## 🔐 Security
+
+- **JWT Authentication** with access/refresh token rotation
+- **Role-Based Permissions** — Granular access control per endpoint
+- **API Rate Limiting** — 100 req/hr (anonymous), 1000 req/hr (authenticated)
+- **CORS** — Configured for frontend domain only
+- **Input Validation** — Serializer-level validation on all inputs
+- **Unique Constraints** — Prevent duplicate applications and saved jobs
+
+---
+
+## 🧪 Testing
+
+```bash
+cd backend
+python manage.py test --verbosity=2
+```
+
+**27 tests** covering:
+
+- User registration and authentication
+- Job CRUD operations and permissions
+- Application lifecycle
+- Filtering, sorting, and salary validation
+- Role-based access control
+
+---
+
+## 🐳 Docker
+
+```bash
+# Build and run with PostgreSQL
+docker-compose up --build
+
+# Run migrations and seed data
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py create_admin
+docker-compose exec web python manage.py seed_data
+```
+
+---
+
+## ⚙️ CI/CD
+
+GitHub Actions pipeline runs on every push and PR:
+
+- **Python linting** with flake8
+- **Django tests** against PostgreSQL
+- **Frontend build** verification
+
+---
+
+## 📊 Database Schema (ERD)
+
+```
+┌──────────────┐     ┌───────────────┐     ┌──────────────┐
+│     User     │     │  JobCategory  │     │  JobPosting  │
+├──────────────┤     ├───────────────┤     ├──────────────┤
+│ id (PK)      │     │ id (PK)       │     │ id (PK)      │
+│ email        │     │ name          │     │ title        │
+│ password     │     │ description   │     │ description  │
+│ first_name   │     │ created_at    │     │ company (FK) │──→ User
+│ last_name    │     └───────────────┘     │ category(FK) │──→ JobCategory
+│ role         │                           │ location     │
+│ company_name │     ┌───────────────┐     │ job_type     │
+│ bio          │     │JobApplication │     │ salary_min   │
+│ phone        │     ├───────────────┤     │ salary_max   │
+└──────────────┘     │ id (PK)       │     │ requirements │
+       │             │ job (FK)      │──→  │ is_active    │
+       │             │ applicant(FK) │──→  │ created_at   │
+       │             │ cover_letter  │     │ updated_at   │
+       │             │ status        │     └──────────────┘
+       │             │ applied_at    │            │
+       │             │ updated_at    │     ┌──────────────┐
+       │             └───────────────┘     │   SavedJob   │
+       │                                   ├──────────────┤
+       └───────────────────────────────────│ user (FK)    │
+                                           │ job (FK)     │
+                                           │ saved_at     │
+                                           └──────────────┘
+```
+
+---
+
+## 👤 Author
+
+**Elias ET** — ProDev Backend Engineering Program
+
+## 📝 License
+
+This project is part of the ALX ProDev Backend Engineering capstone (Project Nexus).
