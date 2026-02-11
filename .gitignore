@@ -1,0 +1,55 @@
+# ========================
+# Python / Django (Backend)
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Database
+db.sqlite3
+db.sqlite3-journal
+
+# Static files (collected)
+staticfiles/
+
+# Distribution
+*.egg-info/
+dist/
+build/
+
+# ========================
+# Node / React (Frontend)
+# ========================
+node_modules/
+dist/
+.cache/
+*.tsbuildinfo
+
+# ========================
+# Environment variables
+# ========================
+.env
+.env.local
+.env.*.local
+
+# ========================
+# IDE & OS
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ========================
+# Logs
+# ========================
+*.log
+npm-debug.log*
