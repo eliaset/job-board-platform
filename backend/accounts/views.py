@@ -5,6 +5,7 @@ Views for user registration, login (JWT), and profile management.
 from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from drf_spectacular.utils import extend_schema
 
@@ -25,13 +26,21 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        # Generate JWT tokens for immediate login
+        refresh = RefreshToken.for_user(user)
         return Response(
             {
                 "message": "User registered successfully.",
                 "user": {
                     "id": user.id,
                     "email": user.email,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
                     "role": user.role,
+                },
+                "tokens": {
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
                 },
             },
             status=status.HTTP_201_CREATED,
