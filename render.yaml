@@ -25,10 +25,8 @@ services:
         value: "https://job-board-frontend.onrender.com"
 
   # Frontend — React + Vite Static Site
-  - type: web
+  - type: static
     name: job-board-frontend
-    runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && VITE_API_URL=https://job-board-api.onrender.com/api npm run build
     staticPublishPath: dist
