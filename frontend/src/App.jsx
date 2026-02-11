@@ -36,8 +36,7 @@ function App() {
                 </span>
               </div>
               <div className="text-sm text-slate-500 text-center">
-                <p>Built with Django REST Framework & React • Project Nexus</p>
-                <p>ProDev Backend Engineering Program © 2026</p>
+                <p>JobBoard © 2026</p>
               </div>
             </div>
           </footer>
